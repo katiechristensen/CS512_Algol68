@@ -1,0 +1,114 @@
+# Katie Christensen
+  Jan 27, 2023
+  CSCI 512 - Program 1 #
+
+BEGIN
+
+MODE EDGE = STRUCT (INT sourcevertex, INT destvertex, INT edgeweight);
+MODE GRAPH = STRUCT (INT vertices, INT edges, REF []EDGE edgematrix);
+
+PROC loadgraph = (STRING filename) GRAPH: (
+  FILE file;
+
+  open (file, filename, stand in channel);
+
+  INT numbervertices;
+  INT numberedges;
+  numbervertices := get int(file);
+  numberedges := get int(file);
+
+  HEAP [0:numberedges-1]EDGE matrix;
+  GRAPH g = (numbervertices, numberedges, matrix);
+
+  INT source;
+  INT dest;
+  INT weight;
+  FOR i FROM 0 TO numberedges-1
+  DO
+    EDGE e;
+    sourcevertex OF e := get int(file);
+    destvertex OF e := get int(file);
+    edgeweight OF e := get int(file);
+
+    matrix[i] := e
+  OD;
+
+  edgematrix OF g := matrix;
+
+  close(file);
+  g
+);
+
+PROC floydwarshall = (GRAPH g) VOID: (
+  [0:edges OF g-1]EDGE matrix;
+  matrix := edgematrix OF g;
+
+  [0:vertices OF g-1, 0:vertices OF g-1]INT processweights, processvertices;
+
+  INT i, j;
+
+  FOR i FROM 0 TO vertices OF g-1
+  DO
+    FOR j FROM 0 TO vertices OF g-1
+    DO
+      processweights[i,j] := 32767;
+      IF i /= j 
+      THEN 
+        processvertices[i,j] := j+1
+      ELSE 
+        processvertices[i,j] := 0
+      FI
+    OD
+  OD; 
+
+  FOR i FROM 0 TO edges OF g-1
+  DO
+    processweights[sourcevertex OF matrix[i]-1, destvertex OF matrix[i]-1] := edgeweight OF matrix[i]
+  OD;
+
+  FOR i FROM 0 TO vertices OF g-1
+  DO
+    FOR j FROM 0 TO vertices OF g-1
+    DO
+      FOR k FROM 0 TO vertices OF g-1
+      DO
+        IF processweights[j,i] + processweights[i,k] < processweights[j,k]
+        THEN 
+          processweights[j,k] := processweights[j,i] + processweights[i,k];
+          processvertices[j,k] := processvertices[j,i]
+        FI
+      OD
+    OD
+  OD;
+
+  print(("pair    dist   path"));
+  FOR i FROM 0 TO vertices OF g-1
+  DO
+    FOR j FROM 0 TO vertices OF g-1
+    DO
+      IF i /= j
+      THEN
+        #printf(($ g(0,0), 4a, g(0,0), 2z, -d, 6z $, i+1, " -> ", j+1, 0, processweights[i,j], i+1));#   #works for 1 but not 2 digits#
+        printf(($l, g(0,0) " -> " g(0,0), 2xg(0), 6z $, i+1, j+1, processweights[i,j], i+1));  #turn in this one#
+        INT k := i+1;
+        DO
+          k := processvertices[k-1,j];
+          printf(($ 2a, g(0,0)  $, "->", k))
+          UNTIL k = j+1
+        OD
+      FI
+    OD
+  OD;
+  print(new line)
+);
+
+main: (
+  IF argc /= 4 
+  THEN 
+    print(("Usage : <name of file containing graph data>", argv(0)))
+  ELSE
+    floydwarshall(loadgraph(argv(4)))
+  FI
+)
+
+END
