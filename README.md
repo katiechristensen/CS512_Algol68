@@ -1,8 +1,8 @@
-# CSCI 512 - Design and Implementation of Computer Programming Languages
-## Winter 2023
-### Algol 68 Translation of a C Implementation of the Floyd-Warshall Algorithm
+# Algol 68 Translation of a C Implementation of the Floyd-Warshall Algorithm
 
-Katie Christensen
+### CSCI 512 - Design and Implementation of Computer Programming Languages
+
+Katie Christensen, Winter 2023
 
 
 The Floyd-Warshall algorithm finds the shortest paths between all pairs of vertices in a weighted graph
